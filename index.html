@@ -1,1 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gloomvault — Dungeon Crawler</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+      <div id="crosshair">+</div>
+
+      <div id="stats">
+        <div class="bar">
+          <span class="bar-label">HP</span>
+          <div class="bar-track"><div id="hp-fill" class="bar-fill hp"></div></div>
+        </div>
+        <div class="bar">
+          <span class="bar-label">STA</span>
+          <div class="bar-track"><div id="stamina-fill" class="bar-fill stamina"></div></div>
+        </div>
+        <div class="bar">
+          <span class="bar-label">TORCH</span>
+          <div class="bar-track"><div id="torch-fill" class="bar-fill torch"></div></div>
+        </div>
+      </div>
+
+      <div id="info">
+        <div id="depth-info">Depth: <span id="depth-value">1</span></div>
+        <div id="kills-info">Slain: <span id="kills-value">0</span></div>
+        <div id="class-info">—</div>
+      </div>
+
+      <div id="combat-log"></div>
+      <div id="damage-flash"></div>
+      <div id="hit-marker"></div>
+
+      <!-- Touch controls (shown only on touch devices) -->
+      <div id="touch-controls" class="hidden">
+        <div id="joystick">
+          <div id="joystick-knob"></div>
+        </div>
+        <div id="touch-buttons">
+          <button id="btn-torch" class="touch-btn small">TORCH</button>
+          <button id="btn-guard" class="touch-btn">GUARD</button>
+          <button id="btn-dodge" class="touch-btn">DODGE</button>
+          <button id="btn-attack" class="touch-btn big">ATTACK</button>
+        </div>
+        <div id="touch-hint">Drag the right side to look • Left stick to move</div>
+      </div>
+    </div>
+
+    <!-- Main Menu -->
+    <div id="menu" class="overlay">
+      <h1>GLOOMVAULT</h1>
+      <p class="subtitle">A descent that does not forgive.</p>
+
+      <div id="class-select">
+        <h2>Choose your vessel</h2>
+        <div id="class-cards"></div>
+      </div>
+
+      <button id="start-btn" disabled>Select a class to descend</button>
+
+      <div id="controls-help">
+        <strong>Controls</strong>
+        <div class="controls-grid">
+          <span>WASD</span><span>Move</span>
+          <span>Mouse</span><span>Look</span>
+          <span>Shift</span><span>Sprint</span>
+          <span>Space</span><span>Dodge roll (i-frames)</span>
+          <span>Left Click</span><span>Attack</span>
+          <span>Right Click</span><span>Parry / Guard</span>
+          <span>Q</span><span>Refuel torch (uses a flask)</span>
+          <span>E</span><span>Interact</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Death / Win screens -->
+    <div id="end-screen" class="overlay hidden">
+      <h1 id="end-title">YOU DIED</h1>
+      <p id="end-subtitle"></p>
+      <button id="restart-btn">Descend again</button>
+    </div>
+
+    <!-- Pause -->
+    <div id="pause-screen" class="overlay hidden">
+      <h1>PAUSED</h1>
+      <button id="resume-btn">Resume</button>
+      <button id="quit-btn">Abandon run</button>
+    </div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
 
