@@ -1,0 +1,194 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --hp: #c0392b;
+  --stamina: #27ae60;
+  --torch: #f39c12;
+  --ink: #0a0a0f;
+  --parchment: #d8c9a3;
+  --accent: #b8860b;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #000;
+  font-family: "Georgia", "Times New Roman", serif;
+  color: var(--parchment);
+  cursor: default;
+  user-select: none;
+}
+
+#game-container { position: relative; width: 100vw; height: 100vh; }
+#game-canvas { display: block; width: 100%; height: 100%; }
+
+.hidden { display: none !important; }
+
+/* ---------- HUD ---------- */
+#hud { position: absolute; inset: 0; pointer-events: none; }
+
+#crosshair {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255,255,255,0.55);
+  font-size: 22px; font-weight: bold;
+  text-shadow: 0 0 4px #000;
+}
+
+#stats {
+  position: absolute; left: 24px; bottom: 24px;
+  display: flex; flex-direction: column; gap: 8px;
+  width: 280px;
+}
+.bar { display: flex; align-items: center; gap: 10px; }
+.bar-label {
+  width: 52px; font-size: 12px; letter-spacing: 2px;
+  text-shadow: 0 1px 2px #000;
+}
+.bar-track {
+  flex: 1; height: 14px;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(184,134,11,0.5);
+  border-radius: 2px; overflow: hidden;
+}
+.bar-fill { height: 100%; width: 100%; transition: width 0.12s linear; }
+.bar-fill.hp { background: linear-gradient(90deg, #7b241c, var(--hp)); }
+.bar-fill.stamina { background: linear-gradient(90deg, #1e7a45, var(--stamina)); }
+.bar-fill.torch { background: linear-gradient(90deg, #a76a08, var(--torch)); }
+
+#info {
+  position: absolute; right: 24px; top: 20px;
+  text-align: right; font-size: 15px;
+  text-shadow: 0 1px 3px #000; line-height: 1.6;
+}
+#class-info { color: var(--accent); font-style: italic; }
+
+#combat-log {
+  position: absolute; left: 24px; top: 20px;
+  font-size: 13px; line-height: 1.5;
+  max-width: 360px; text-shadow: 0 1px 2px #000;
+  opacity: 0.9;
+}
+#combat-log .entry { transition: opacity 0.5s; }
+
+#damage-flash {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(160,20,20,0.55) 100%);
+  opacity: 0; transition: opacity 0.1s;
+}
+#hit-marker {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(1.4);
+  color: #fff; font-size: 26px; font-weight: bold;
+  opacity: 0; text-shadow: 0 0 6px #000;
+}
+
+/* ---------- Overlays ---------- */
+.overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 18px; padding: 40px;
+  background: radial-gradient(ellipse at center, rgba(15,12,20,0.92), rgba(2,2,4,0.98));
+  text-align: center;
+  z-index: 10;
+}
+.overlay h1 {
+  font-size: 64px; letter-spacing: 8px;
+  color: var(--accent);
+  text-shadow: 0 0 24px rgba(184,134,11,0.4);
+}
+.subtitle { font-style: italic; opacity: 0.7; margin-top: -10px; }
+.overlay h2 { font-size: 20px; letter-spacing: 2px; opacity: 0.85; font-weight: normal; }
+
+#class-cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; max-width: 900px; }
+.class-card {
+  width: 200px; padding: 18px;
+  border: 1px solid rgba(184,134,11,0.4);
+  background: rgba(20,16,26,0.7);
+  border-radius: 6px; cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, background 0.15s;
+  pointer-events: auto;
+}
+.class-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+.class-card.selected { border-color: var(--accent); background: rgba(60,45,15,0.6); box-shadow: 0 0 18px rgba(184,134,11,0.3); }
+.class-card h3 { color: var(--accent); font-size: 20px; margin-bottom: 6px; }
+.class-card .tagline { font-style: italic; font-size: 12px; opacity: 0.65; margin-bottom: 10px; }
+.class-card .stats-mini { font-size: 12px; line-height: 1.7; text-align: left; opacity: 0.85; }
+.class-card .stats-mini b { color: var(--parchment); }
+
+button {
+  pointer-events: auto;
+  font-family: inherit; font-size: 16px; letter-spacing: 1px;
+  padding: 12px 32px;
+  background: rgba(40,30,15,0.8);
+  color: var(--parchment);
+  border: 1px solid var(--accent);
+  border-radius: 4px; cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+button:hover:not(:disabled) { background: rgba(80,60,25,0.9); transform: translateY(-2px); }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+#controls-help {
+  margin-top: 20px; font-size: 13px; opacity: 0.75;
+  border-top: 1px solid rgba(184,134,11,0.25);
+  padding-top: 16px; max-width: 480px;
+}
+.controls-grid {
+  display: grid; grid-template-columns: 120px 1fr;
+  gap: 4px 16px; margin-top: 10px; text-align: left;
+}
+.controls-grid span:nth-child(odd) { color: var(--accent); font-weight: bold; }
+
+#end-title.win { color: #f1c40f; }
+
+/* ---------- Touch controls ---------- */
+#touch-controls { position: absolute; inset: 0; pointer-events: none; }
+
+#joystick {
+  position: absolute; left: 28px; bottom: 90px;
+  width: 130px; height: 130px; border-radius: 50%;
+  background: rgba(20,16,26,0.35);
+  border: 2px solid rgba(184,134,11,0.5);
+  pointer-events: auto; touch-action: none;
+  display: flex; align-items: center; justify-content: center;
+}
+#joystick-knob {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(184,134,11,0.55);
+  border: 2px solid rgba(216,201,163,0.7);
+  transition: transform 0.02s linear;
+}
+
+#touch-buttons {
+  position: absolute; right: 24px; bottom: 60px;
+  display: grid; grid-template-columns: repeat(2, auto); gap: 14px;
+  pointer-events: none;
+}
+.touch-btn {
+  pointer-events: auto; touch-action: none;
+  width: 84px; height: 84px; border-radius: 50%;
+  font-size: 13px; letter-spacing: 1px;
+  background: rgba(40,30,15,0.55);
+  border: 2px solid rgba(184,134,11,0.6);
+  color: var(--parchment);
+  display: flex; align-items: center; justify-content: center;
+  -webkit-user-select: none; user-select: none;
+}
+.touch-btn:active { background: rgba(120,90,35,0.8); transform: scale(0.94); }
+.touch-btn.big { width: 104px; height: 104px; font-size: 15px; border-color: var(--hp); }
+.touch-btn.small { width: 68px; height: 68px; font-size: 11px; }
+
+#touch-hint {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-size: 13px; opacity: 0.5; text-align: center; width: 260px;
+  text-shadow: 0 1px 3px #000;
+  animation: fadeHint 4s forwards;
+}
+@keyframes fadeHint { 0%,60% { opacity: 0.55; } 100% { opacity: 0; } }
+
+/* On touch devices, don't rely on hover states and make menu text a bit larger */
+.touch-device .overlay h1 { font-size: 44px; }
+.touch-device #controls-help { display: none; }
+.touch-device #crosshair { font-size: 28px; }
